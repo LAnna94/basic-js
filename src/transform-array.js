@@ -18,32 +18,43 @@ function transform(arr) {
     throw new Error (`'arr' parameter must be an instance of the Array!`);
   }
 
-  let value = arr.find(item => {
-    if(typeof item === 'string') {
-      return item;
-    }
-    })
-
-    if(value === undefined) {
-      return arr;
-    }
-
   let newArr = [];
+  let skipElement = false;
 
-  arr.forEach(item => {
-    if (typeof item === 'number') {
-      newArr.push(item)
+  arr.forEach((item, index) => {
+    if(skipElement) {
+      skipElement = false;
+      return
     }
 
-    if (item === '--double-next' && arr.indexOf(item) !== arr.length - 1) {
-      newArr.push(arr[arr.indexOf(item)+1])
-    } else if (item === '--double-prev' && arr.indexOf(item) !== 0) {
-      newArr.push(arr[arr.indexOf(item)-1])
-    } else if (item === '--discard-next') {
-      newArr.splice(arr.indexOf(item), 1)
-    } else if (item === '--discard-prev') {
-      newArr.splice(arr.indexOf(item) - 1, 1)
-    }   
+    switch(item) {
+      case '--discard-next':
+        if (index < arr.length - 1) {
+          skipElement = true;
+        }
+      break;
+
+      case '--discard-prev':
+        if (index > 0 && newArr.length > 0 && arr[index - 2] !== '--discard-next') {
+          newArr.pop()
+        }
+      break;
+
+      case '--double-next':
+        if (index < arr.length - 1) {
+          newArr.push(arr[index + 1])
+        }
+      break;
+
+      case '--double-prev':
+        if (index > 0 && arr[index - 2] !== '--discard-next') {
+          newArr.push(arr[index - 1])
+        }
+      break;
+
+      default: 
+        newArr.push(item)
+    }
   })
 
   return newArr;
